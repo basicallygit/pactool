@@ -90,12 +90,18 @@ choice(s) e.g 1425:
             },
             '3' => {
                 println!("==> Pruning orphaned dependencies...");
+                let mut orphans = Vec::new();
                 Command::new("pacman")
-                    .arg("-Qdtq").output().unwrap().stdout.lines().for_each(|line| {
-                        Command::new("pacman")
-                            .arg("-Rns").arg(line.unwrap())
-                            .status().unwrap();
-                    });
+                    .arg("-Qdtq").output().unwrap().stdout.lines()
+                    .for_each(|line| orphans.push(line.unwrap()));
+                if !orphans.is_empty() {
+                    Command::new("pacman")
+                        .arg("-Rns").args(orphans)
+                        .status().unwrap();
+                }
+                else {
+                    println!("==> No orphaned dependencies found!");
+                }
             },
             '4' => {
                 println!("==> Checking for pacdiffs...");
